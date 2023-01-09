@@ -270,6 +270,7 @@ STATIC_LOWER_FUSED_MODULE_MAP: Dict[Type[nn.Module], Tuple[Type[nn.Module], Type
 #   2) The replacement static quantized module class for lowering
 STATIC_LOWER_FUSED_MODULE_TWO_DQ_NODES_MAP: Dict[Type[nn.Module], Tuple[Type[nn.Module], Type[WeightedQuantizedModule]]] = {
     nni.ConvAdd2d: (nnqr.Conv2d, nniq.ConvAdd2d),
+    nni.ConvAddReLU2d: (nnqr.Conv2d, nniq.ConvAddReLU2d),
 }
 
 # Mapping from fused module class to a 2-tuple of:
