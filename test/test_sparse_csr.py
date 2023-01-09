@@ -1377,8 +1377,8 @@ class TestSparseCSR(TestCase):
                 a = self.genSparseCSRTensor((m, k), nnz, dtype=dtype, device=device, index_dtype=index_dtype)
 
                 # a_batched is a regular CSR tensor but with a batch dimension in the shape
-                a_batched = torch._sparse_csr_tensor_unsafe(
-                    a.crow_indices(), a.col_indices(), a.values(), (batch_size, m, k))
+                a_batched = torch.sparse_csr_tensor(
+                    a.crow_indices(), a.col_indices(), a.values(), (batch_size, m, k), check_invariants=False)
 
                 b = make_tensor((batch_size, k, n), dtype=dtype, device=device, noncontiguous=noncontiguous)
                 c = make_tensor((batch_size, m, n), dtype=dtype, device=device, noncontiguous=noncontiguous)
@@ -1409,9 +1409,13 @@ class TestSparseCSR(TestCase):
                 nnz = random.randint(0, m * k)
                 a = self.genSparseCSRTensor((m, k), nnz, dtype=dtype, device=device, index_dtype=index_dtype)
 
-                # a_batched is a regular CSR tensor but with a batch dimension in the shape
-                a_batched = torch._sparse_csr_tensor_unsafe(
-                    a.crow_indices(), a.col_indices(), a.values(), (batch_size, m, k))
+                # a_batched is a regular CSR tensor but with a batch
+                # dimension in the shape. It is unorthodox in PyTorch
+                # to represent a batch sparse tensor in this way,
+                # hence checking the tensor invariants is locally
+                # turned off.
+                a_batched = torch.sparse_csr_tensor(
+                    a.crow_indices(), a.col_indices(), a.values(), (batch_size, m, k), check_invariants=False)
 
                 b = make_tensor((batch_size, k, n), dtype=dtype, device=device, noncontiguous=noncontiguous)
                 for op_b, op_out in itertools.product([True, False], repeat=2):
@@ -1538,8 +1542,8 @@ class TestSparseCSR(TestCase):
             a = self.genSparseCSRTensor((m, k), nnz, dtype=dtype, device=device, index_dtype=index_dtype)
             a_data = make_tensor((nnz, block_size, block_size), dtype=dtype, device=device)
             a_data = a_data.mT if noncontiguous else a_data
-            a = torch._sparse_bsr_tensor_unsafe(a.crow_indices(), a.col_indices(),
-                                                a_data, (m * block_size, k * block_size))
+            a = torch.sparse_bsr_tensor(a.crow_indices(), a.col_indices(),
+                                        a_data, (m * block_size, k * block_size), check_invariants=False)
             b = make_tensor((k * block_size, n * block_size), dtype=dtype, device=device, noncontiguous=noncontiguous)
             c = make_tensor((m * block_size, n * block_size), dtype=dtype, device=device, noncontiguous=noncontiguous)
             for op_b, op_out in itertools.product([True, False], repeat=2):
@@ -1574,8 +1578,8 @@ class TestSparseCSR(TestCase):
                 a = self.genSparseCSRTensor((m, k), nnz, dtype=dtype, device=device, index_dtype=index_dtype)
                 a_data = make_tensor((nnz, block_size, block_size), dtype=dtype, device=device)
                 a_data = a_data.mT if noncontiguous else a_data   # Test column-major blocks
-                a = torch._sparse_bsr_tensor_unsafe(a.crow_indices(), a.col_indices(),
-                                                    a_data, (m * block_size, k * block_size))
+                a = torch.sparse_bsr_tensor(a.crow_indices(), a.col_indices(),
+                                            a_data, (m * block_size, k * block_size), check_invariants=False)
             b = make_tensor((k * block_size,), dtype=dtype, device=device, noncontiguous=noncontiguous)
             c = make_tensor((m * block_size,), dtype=dtype, device=device, noncontiguous=noncontiguous)
             self.run_test_block_addmm_addmv(torch.addmv, c, a, b, dtype=dtype, device=device)
@@ -1647,8 +1651,8 @@ class TestSparseCSR(TestCase):
                 a = self.genSparseCSRTensor((m, m), nnz, dtype=dtype, device=device, index_dtype=index_dtype)
                 a_data = make_tensor((nnz, block_size, block_size), dtype=dtype, device=device)
                 a_data = a_data.mT if noncontiguous else a_data  # Test column-major blocks
-                a = torch._sparse_bsr_tensor_unsafe(a.crow_indices(), a.col_indices(),
-                                                    a_data, (m * block_size, m * block_size))
+                a = torch.sparse_bsr_tensor(a.crow_indices(), a.col_indices(),
+                                            a_data, (m * block_size, m * block_size), check_invariants=False)
             b = make_tensor((m * block_size, k), dtype=dtype, device=device, noncontiguous=noncontiguous)
 
             for (upper, unitriangular, transpose, op_out) in itertools.product([True, False], repeat=4):
